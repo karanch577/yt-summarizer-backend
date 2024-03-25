@@ -3,11 +3,15 @@ const app = express();
 import 'dotenv/config';
 const { PORT } = process.env;
 import morgan from 'morgan';
+import cors from "cors"
 
 import summaryRoutes from "./routes/summary.route.js"
 import errorMiddleware from './middlewares/error.middleware.js';
 
 // middlewares
+app.use(cors({
+  origin: "*"
+}))
 app.use(morgan("tiny"))
 
 app.get('/', async (_req, res) => {
