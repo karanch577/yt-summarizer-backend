@@ -29,7 +29,7 @@ export const getVideoSummary = asyncHandler(async (req, res) => {
     
     // getting the summary from the transcript
     const prompt = `You are Yotube video summarizer. You will be taking the transcript text
-    and summarizing the entire video and providing the important summary in points. Please provide the summary of the text given here: `
+    and summarizing the entire video and providing the important summary in points. Please provide the summary in English of the text given here: `
 
     const result = await model.generateContent(prompt + transcript)
     const response = await result.response;
