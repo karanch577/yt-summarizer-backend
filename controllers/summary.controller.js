@@ -1,10 +1,12 @@
 import { YoutubeTranscript } from 'youtube-transcript';
 import asyncHandler from '../services/asyncHandler.js';
 import CustomError from '../utils/customError.js';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({
+  apiKey: process.env.CLAUDE_API_KEY
+});
 
 
 /***************************************************************
@@ -23,19 +25,25 @@ export const getVideoSummary = asyncHandler(async (req, res) => {
         throw new CustomError("videoId is required", 400)
     }
 
-    // gettings the transcript of the video
+    // // gettings the transcript of the video
     const transcriptArr = await YoutubeTranscript.fetchTranscript(videoId)
     const transcript = transcriptArr.map(item => item.text).join(" ")
+    // console.log(transcript)
+
     
     // getting the summary from the transcript
-    const prompt = `You are Yotube video summarizer. You will be taking the transcript text
-    and summarizing the entire video and providing the important summary in points. Please provide the summary in English only, no matter in what language the transcript is, of the text given here: `
+    const prompt = `You are a video summarizer. Please summarize the transcript provided below and translate into English, Provide the most important points in a bulleted list with no "Here are the key points from the transcript in English:" text.\n\n${transcript}`
 
-    const result = await model.generateContent(prompt + transcript)
-    const response = await result.response;
-    const text = response.text();
+
+    const message = await anthropic.messages.create({
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }],
+        model: 'claude-3-opus-20240229',
+    });    
+
+    
     res.status(200).json({
         success: true,
-        summary: text
+        summary: message.content[0].text
     });
 })
